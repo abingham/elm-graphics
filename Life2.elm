@@ -1,6 +1,8 @@
 module Life2 where
 
 import Array
+import Color
+import Graphics.Collage exposing (collage, filled, Form, move, rect)
 import Graphics.Element
 import Html
 import List exposing (filter, length, map)
@@ -10,7 +12,7 @@ import StartApp.Simple as StartApp
 import Time
 
 main =
-  StartApp.start { model = createModel 50 50, view = view, update = update }
+  StartApp.start { model = createModel 200 200, view = view, update = update }
 
 
 --
@@ -89,7 +91,28 @@ update tick model =
 -- View stuff
 --
 
-view address model = Graphics.Element.show model |> Html.fromElement
+cell_size = 5
+
+renderCell : Int -> Int -> Bool -> Graphics.Collage.Form
+renderCell num_cols index alive =
+  let
+    color = if alive then Color.rgb 255 0 0 else Color.rgb 0 0 0
+    row = index // num_cols
+    col = index % num_cols
+    toX = toFloat (col * cell_size)
+    toY = toFloat (row * cell_size)
+  in
+    rect cell_size cell_size |> filled color |> move (toX, toY)
+
+view address model =
+  let
+    render = renderCell model.num_cols
+    cells = Array.indexedMap render model.cells |> Array.toList
+  in
+    collage
+      (model.num_cols * cell_size)
+      (model.num_rows * cell_size)
+      cells |> Html.fromElement
 
 
 --
