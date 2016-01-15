@@ -4,7 +4,34 @@ import Graphics.Element exposing (..)
 import Graphics.Collage
 import Graphics.Collage exposing (Form, move, circle, filled)
 import Mouse
+import StartApp.Simple as StartApp
 import Time exposing (every, second, Time)
+
+main =
+  StartApp.start { model = model, view = view, update = update }
+
+type alias Ball =
+  { x : Int
+  , y : Int
+  , vx : Float
+  , vy : Float
+  {- size, color, etc.-}
+  }
+
+createBall : Int -> Int -> Float -> Float -> Ball
+createBall x y vx vy = { x = x, y = y, vx = vx, vy = vy }
+
+type alias Model = List Ball
+
+model : Model
+model = [createBall 10 10 0 1]
+
+update : Signal Time -> Model -> Model
+update action model = model -- todo
+
+view address model = Html.div [] [Html.text "TODO!"]
+
+
 
 -- Eventually we want to render this on the screen and the
 -- function to do this requires a List Form not just a single
@@ -53,5 +80,5 @@ buildHtml elem =
         [ Html.text "hola!"
         , Html.fromElement elem]
 
-main =
-  Signal.map buildHtml (elementSignal circleSignal)
+-- main =
+--   Signal.map buildHtml (elementSignal circleSignal)
