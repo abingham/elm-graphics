@@ -12,19 +12,15 @@ import StartApp.Simple as StartApp
 import Time
 
 main =
-  Signal.map view viewSignal
-
-
-viewSignal : Signal Model
-viewSignal =
-  let
-    model = (createModel 200 200)
-  in
-    Signal.foldp update model (ticks 0.1)
+  Signal.map view model
 
 --
 -- Model stuff
 --
+
+model : Signal Model
+model =
+  Signal.foldp update (createModel 200 200) (ticks 0.1)
 
 type alias Model =
   { cells : Array.Array Bool
