@@ -12,8 +12,15 @@ import StartApp.Simple as StartApp
 import Time
 
 main =
-  StartApp.start { model = createModel 200 200, view = view, update = update }
+  Signal.map view viewSignal
 
+
+viewSignal : Signal Model
+viewSignal =
+  let
+    model = (createModel 200 200)
+  in
+    Signal.foldp update model (ticks 0.1)
 
 --
 -- Model stuff
@@ -104,7 +111,8 @@ renderCell num_cols index alive =
   in
     rect cell_size cell_size |> filled color |> move (toX, toY)
 
-view address model =
+view : Model -> Graphics.Element.Element
+view model =
   let
     render = renderCell model.num_cols
     cells = Array.indexedMap render model.cells |> Array.toList
@@ -112,7 +120,7 @@ view address model =
     collage
       (model.num_cols * cell_size)
       (model.num_rows * cell_size)
-      cells |> Html.fromElement
+      cells
 
 
 --
