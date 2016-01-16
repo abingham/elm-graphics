@@ -20,13 +20,16 @@ main =
 
 model : Signal Model
 model =
-  Signal.foldp update (createModel 200 200) (ticks 0.1)
+  Signal.foldp update (createModel 200 200) (ticks 1)
 
 type alias Model =
   { cells : Array.Array Bool
   , num_rows : Int
   , num_cols : Int
   }
+
+get : Model -> Int -> Bool
+get model index = Array.get index model.cells |> Maybe.withDefault False
 
 createModel : Int -> Int -> Model
 createModel num_rows num_cols =
@@ -38,41 +41,34 @@ createModel num_rows num_cols =
     , num_cols = num_cols
     }
 
--- Get the value at (row, col) in the model cells. This does wrapping in both
--- X and Y, so feel free to pass in coordinates that are out of range.
-get : Int -> Int -> Model -> Bool
-get row col model =
-  let
-    row = row % model.num_rows
-    col = col % model.num_cols
-    index = (row * model.num_cols + col)
-  in
-    Array.get index model.cells |> Maybe.withDefault False
-
-
 --
 -- Update stuff
 --
 
-neighborCoords : Int -> Int -> List (Int, Int)
-neighborCoords row col =
-  [ (row - 1, col - 1)
-  , (row - 1, col)
-  , (row - 1, col + 1)
-  , (row, col - 1)
-  , (row, col + 1)
-  , (row + 1, col - 1)
-  , (row + 1, col)
-  , (row + 1, col + 1)
-  ]
+neighborCoords : Int -> Int -> Int -> List Int
+neighborCoords index num_cols num_rows =
+  let
+    up_row = index - num_cols
+    down_row = index + num_cols
+    full_size = num_cols * num_rows
+    bound = (\i -> i % full_size)
+  in
+    map bound [ up_row - 1
+              , up_row
+              , up_row + 1
+              , index - 1
+              , index + 1
+              , down_row - 1
+              , down_row
+              , down_row + 1
+              ]
 
 -- Get the next round's value for a flat index
 newVal : Model -> Int -> Bool
 newVal model index =
   let
-    row = index // model.num_cols
-    col = index % model.num_cols
-    neighborVals = map (\(r, c) -> get r c model) (neighborCoords row col)
+    indices = (neighborCoords index model.num_cols model.num_rows)
+    neighborVals = map (get model) indices
     livingNeighbors = filter identity neighborVals |> length
   in
     if livingNeighbors > 3 then
@@ -82,7 +78,7 @@ newVal model index =
     else if livingNeighbors == 3 then
       True
     else
-      get row col model
+      get model index
 
 update tick model =
   { model |
@@ -132,4 +128,4 @@ randomBools size =
     vals
 
 ticks : Float -> Signal Int
-ticks rate = (Signal.foldp (\tick total -> total + 1) 0 (Time.every (rate * Time.second)))
+ticks rate = (Signal.foldp (\tick total -> total + 1) 0 (Time.every (rate * Time.millisecond)))
