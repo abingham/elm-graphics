@@ -18,7 +18,16 @@ import Time
 -- TODO: Make it faster! Surely we can improve on this...
 
 main =
-  Signal.map view model
+  -- Signal.map view model
+  Signal.map buildHtml viewSignal
+
+viewSignal = Signal.map view model
+
+buildHtml : Graphics.Element.Element -> Html.Html
+buildHtml elem =
+  Html.div []
+      [ Html.text "hola!"
+      , Html.fromElement elem ]
 
 --
 -- Model stuff
@@ -26,6 +35,9 @@ main =
 
 model : Signal Model
 model =
+  -- TODO: Route more signals through the update mechanism, and let it update
+  -- the model appropriately. Clever... For example, we need an action to update
+  -- the seed and restart the simulation.
   Signal.foldp update (createModel 200 200 12345) (ticks 10)
 
 type alias Model =
