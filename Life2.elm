@@ -26,25 +26,27 @@ main =
 
 model : Signal Model
 model =
-  Signal.foldp update (createModel 200 200) (ticks 10)
+  Signal.foldp update (createModel 200 200 12345) (ticks 10)
 
 type alias Model =
   { cells : Array.Array Bool
   , num_rows : Int
   , num_cols : Int
+  , seed : Int
   }
 
 get : Model -> Int -> Bool
 get model index = Array.get index model.cells |> Maybe.withDefault False
 
-createModel : Int -> Int -> Model
-createModel num_rows num_cols =
+createModel : Int -> Int -> Int -> Model
+createModel num_rows num_cols seed =
   let
     full_size = (num_rows * num_cols)
   in
-    { cells = randomBools full_size |> Array.fromList
+    { cells = randomBools full_size (Random.initialSeed seed) |> Array.fromList
     , num_rows = num_rows
     , num_cols = num_cols
+    , seed = seed
     }
 
 --
@@ -135,11 +137,11 @@ view model =
 -- Utility stuff
 --
 
-randomBools : Int -> List Bool
-randomBools size =
+randomBools : Int -> Random.Seed -> List Bool
+randomBools size seed =
   let
     gen = Random.list size Random.bool
-    (vals, seed) = Random.generate gen (Random.initialSeed 2345)
+    (vals, seed) = Random.generate gen seed
   in
     vals
 
