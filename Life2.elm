@@ -20,7 +20,7 @@ main =
 
 model : Signal Model
 model =
-  Signal.foldp update (createModel 200 200) (ticks 1)
+  Signal.foldp update (createModel 10 10) (ticks 1)
 
 type alias Model =
   { cells : Array.Array Bool
@@ -45,23 +45,32 @@ createModel num_rows num_cols =
 -- Update stuff
 --
 
+-- convert flat index to (row, col) tuple
+to2d : Int -> Int -> (Int, Int)
+to2d num_cols index = (index // num_cols, index % num_cols)
+
+-- Convert a (row, col) tuple to a flat index
+toFlat : Int -> (Int, Int) -> Int
+toFlat num_cols (row, col) = row * num_cols + col
+
+bound : Int -> Int -> (Int, Int) -> (Int, Int)
+bound num_rows num_cols (row, col) = (row % num_rows, col % num_cols)
+
 neighborCoords : Int -> Int -> Int -> List Int
 neighborCoords index num_cols num_rows =
   let
-    up_row = index - num_cols
-    down_row = index + num_cols
-    full_size = num_cols * num_rows
-    bound = (\i -> i % full_size)
+    (row, col) = to2d num_cols index
   in
-    map bound [ up_row - 1
-              , up_row
-              , up_row + 1
-              , index - 1
-              , index + 1
-              , down_row - 1
-              , down_row
-              , down_row + 1
-              ]
+    [ (row - 1, col - 1)
+    , (row - 1, col)
+    , (row - 1, col + 1)
+    , (row, col - 1)
+    , (row, col + 1)
+    , (row + 1, col - 1)
+    , (row + 1, col)
+    , (row + 1, col + 1)]
+    |> map (bound num_rows num_cols)
+    |> map (toFlat num_cols)
 
 -- Get the next round's value for a flat index
 newVal : Model -> Int -> Bool
@@ -127,5 +136,5 @@ randomBools size =
   in
     vals
 
-ticks : Float -> Signal Int
-ticks rate = (Signal.foldp (\tick total -> total + 1) 0 (Time.every (rate * Time.millisecond)))
+ticks : Int -> Signal Int
+ticks fps = (Signal.foldp (\tick total -> total + 1) 0 (Time.fps fps))
