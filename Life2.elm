@@ -11,6 +11,12 @@ import Random
 import StartApp.Simple as StartApp
 import Time
 
+-- TODO: Use time for random seed, or let use specify it
+-- TODO: Controls for grid size
+-- TODO: Let user bring cells to life via clicking or something.
+-- TODO: Control over cell size
+-- TODO: Make it faster! Surely we can improve on this...
+
 main =
   Signal.map view model
 
@@ -20,7 +26,7 @@ main =
 
 model : Signal Model
 model =
-  Signal.foldp update (createModel 10 10) (ticks 1)
+  Signal.foldp update (createModel 200 200) (ticks 10)
 
 type alias Model =
   { cells : Array.Array Bool
@@ -105,8 +111,7 @@ renderCell : Int -> Int -> Bool -> Graphics.Collage.Form
 renderCell num_cols index alive =
   let
     color = if alive then Color.rgb 255 0 0 else Color.rgb 0 0 0
-    row = index // num_cols
-    col = index % num_cols
+    (row, col) = to2d num_cols index
     toX = toFloat (col * cell_size)
     toY = toFloat (row * cell_size)
   in
@@ -115,12 +120,14 @@ renderCell num_cols index alive =
 view : Model -> Graphics.Element.Element
 view model =
   let
-    render = renderCell model.num_cols
-    cells = Array.indexedMap render model.cells |> Array.toList
+    render = (renderCell model.num_cols)
+    yshift = toFloat (-1 * model.num_cols * cell_size // 2)
+    xshift = toFloat (-1 * model.num_rows * cell_size // 2)
+    cells = Array.indexedMap render model.cells |> Array.map (move (xshift, yshift)) |> Array.toList
   in
     collage
-      (model.num_cols * cell_size)
-      (model.num_rows * cell_size)
+      (model.num_cols * cell_size * 2)
+      (model.num_rows * cell_size * 2)
       cells
 
 
@@ -132,7 +139,7 @@ randomBools : Int -> List Bool
 randomBools size =
   let
     gen = Random.list size Random.bool
-    (vals, seed) = Random.generate gen (Random.initialSeed 1234)
+    (vals, seed) = Random.generate gen (Random.initialSeed 2345)
   in
     vals
 
