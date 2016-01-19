@@ -5,6 +5,7 @@ import Color
 import Graphics.Collage exposing (collage, filled, Form, move, rect)
 import Graphics.Element
 import Html
+import Html.Events
 import List exposing (filter, length, map)
 import Maybe
 import Random
@@ -21,24 +22,29 @@ main =
   -- Signal.map view model
   Signal.map buildHtml viewSignal
 
-viewSignal = Signal.map view model
-
-buildHtml : Graphics.Element.Element -> Html.Html
-buildHtml elem =
-  Html.div []
-      [ Html.text "hola!"
-      , Html.fromElement elem ]
-
 --
 -- Model stuff
 --
+
+type Action = None | Reset
+
+type alias Input =
+  { action : Action
+  , tick : Int
+  }
+
+htmlMailbox : Signal.Mailbox Action
+htmlMailbox = Signal.mailbox None
+
+input : Signal Input
+input = Signal.map2 Input htmlMailbox.signal (ticks 10)
 
 model : Signal Model
 model =
   -- TODO: Route more signals through the update mechanism, and let it update
   -- the model appropriately. Clever... For example, we need an action to update
   -- the seed and restart the simulation.
-  Signal.foldp update (createModel 200 200 12345) (ticks 10)
+  Signal.foldp update (createModel 200 200 12345) input
 
 type alias Model =
   { cells : Array.Array Bool
@@ -109,11 +115,16 @@ newVal model index =
     else
       get model index
 
-update tick model =
-  { model |
-      cells = Array.initialize (model.num_rows * model.num_cols) (newVal model)
-  }
+update : Input -> Model -> Model
+update input model =
+  case input.action of
+    None ->
+      { model |
+          cells = Array.initialize (model.num_rows * model.num_cols) (newVal model)
+      }
 
+    Reset ->
+      createModel 200 200 12345
 
 --
 -- View stuff
@@ -144,6 +155,15 @@ view model =
       (model.num_rows * cell_size * 2)
       cells
 
+viewSignal : Signal Graphics.Element.Element
+viewSignal = Signal.map view model
+
+buildHtml : Graphics.Element.Element -> Html.Html
+buildHtml elem =
+  Html.div []
+      [ Html.text "hola!"
+      , Html.button [ Html.Events.onClick htmlMailbox.address Reset ] [ Html.text "reset" ]
+      , Html.fromElement elem ]
 
 --
 -- Utility stuff
