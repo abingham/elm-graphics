@@ -9,7 +9,6 @@ import Html.Events
 import List exposing (filter, length, map)
 import Maybe
 import Random
-import StartApp.Simple as StartApp
 import Time
 
 -- TODO: Use time for random seed, or let use specify it
@@ -18,6 +17,10 @@ import Time
 -- TODO: Control over cell size
 -- TODO: Make it faster! Surely we can improve on this...
 
+-- Here's how to use StartApp like a boss...
+-- http://package.elm-lang.org/packages/evancz/start-app/2.0.2/StartApp
+
+main : Signal Html.Html
 main =
   -- Signal.map view model
   Signal.map buildHtml viewSignal
@@ -130,6 +133,7 @@ update input model =
 -- View stuff
 --
 
+cell_size : Int
 cell_size = 5
 
 renderCell : Int -> Int -> Bool -> Graphics.Collage.Form
@@ -140,7 +144,7 @@ renderCell num_cols index alive =
     toX = toFloat (col * cell_size)
     toY = toFloat (row * cell_size)
   in
-    rect cell_size cell_size |> filled color |> move (toX, toY)
+    rect (toFloat cell_size) (toFloat cell_size) |> filled color |> move (toX, toY)
 
 view : Model -> Graphics.Element.Element
 view model =
