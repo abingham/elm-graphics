@@ -9,6 +9,7 @@ import Html.Events
 import List exposing (filter, length, map)
 import Maybe
 import Random
+import StartApp
 import Time
 
 -- TODO: Use time for random seed, or let use specify it
@@ -19,11 +20,18 @@ import Time
 
 -- Here's how to use StartApp like a boss...
 -- http://package.elm-lang.org/packages/evancz/start-app/2.0.2/StartApp
+-- Also look at Signal.mergeMany...I think this will let us pull together various signals like time and HTML button clicks.
 
-main : Signal Html.Html
+app =
+  start { init = init, view = view, update = update, inputs = [] }
+
 main =
-  -- Signal.map view model
-  Signal.map buildHtml viewSignal
+  app.html
+
+--=main : Signal Html.Html
+-- main =
+--   -- Signal.map view model
+--   Signal.map buildHtml viewSignal
 
 --
 -- Model stuff
