@@ -12,14 +12,14 @@ import Life.Grid exposing (Grid, to2d)
 import Life.Input exposing (..)
 import Life.Model exposing (Model)
 
--- Draw a single cell in its correct final position
+-- Draw a single cell in
 renderCell : Int -> Int -> Int -> Bool -> Graphics.Collage.Form
 renderCell num_cols cell_size index alive =
   let
     color = if alive then Color.rgb 255 0 0 else Color.rgb 0 0 0
-    (row, col) = to2d num_cols index -- TODO: This is a little skeezy.
-    toX = toFloat (col * cell_size)
-    toY = toFloat (row * cell_size)
+    (row, col) = to2d num_cols index -- TODO: This use of to2d is a little skeezy.
+    toX = toFloat (col * cell_size + cell_size // 2)
+    toY = toFloat (row * cell_size + cell_size // 2)
   in
     rect (toFloat cell_size) (toFloat cell_size) |> filled color |> move (toX, toY)
 
@@ -32,11 +32,12 @@ renderGrid grid width height cell_renderer =
     cells = Array.indexedMap cell_renderer grid.cells
             |> Array.map (\c -> move (shift_x, shift_y) c)
             |> Array.toList
+    background = rect (toFloat width) (toFloat height) |> filled (Color.rgb 0 0 0)
   in
     collage
       width
       height
-      cells
+      (background :: cells)
 
 countStyle : Attribute
 countStyle =
@@ -52,12 +53,12 @@ view : Signal.Address Input -> Model -> Html
 view address model =
   let
     cell_renderer = renderCell model.grid.num_cols model.cell_size
-    grid_size = model.cell_size * model.grid.num_cols + 20
+    grid_size = model.cell_size * model.grid.num_cols
     elem = renderGrid model.grid grid_size grid_size cell_renderer
   in
     div []
-          [ text "hola!"
-          , button [ onClick address Reset ] [ text "reset" ]
+          [ button [ onClick address Reset ] [ text "reset" ]
+          , text "cell size"
           , button [ onClick address (ResizeCells (model.cell_size - 1)) ] [ text "-" ]
           , div [ countStyle ] [ text (toString model.cell_size) ]
           , button [ onClick address (ResizeCells (model.cell_size + 1)) ] [ text "+" ]
