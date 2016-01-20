@@ -5,8 +5,8 @@ import Effects exposing (Effects)
 import StartApp
 
 import Life.Grid
-import Life.Grid exposing (Grid)
 import Life.Input exposing (..)
+import Life.Model exposing (create, Model)
 import Life.Util exposing (noFx, randomBools, ticks)
 import Life.View exposing (view)
 
@@ -17,10 +17,10 @@ import Life.View exposing (view)
 -- TODO: Make it faster! Surely we can improve on this...
 
 -- Aggregate of input types
-app : StartApp.App Grid
+app : StartApp.App Model
 app =
   StartApp.start
-    { init = noFx (Life.Grid.create 200 200 12345)
+    { init = noFx (create 200 200 12345 5)
     , view = view
     , update = update
     , inputs = [ Signal.map (\t -> Tick t) (ticks 10)] }
@@ -29,15 +29,21 @@ app =
 -- Update stuff
 --
 
-update : Input -> Grid -> (Grid, Effects Input)
+update : Input -> Model -> (Model, Effects Input)
 update input model =
   let
     m =
       case input of
         Tick t ->
-          Life.Grid.step model
+          { model |
+              grid = Life.Grid.step model.grid
+          }
+
 
         Reset ->
-          Life.Grid.create 200 200 12345
+          { model |
+              grid =  Life.Grid.create 200 200 12345
+          }
+
   in
     noFx m

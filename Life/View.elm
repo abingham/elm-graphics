@@ -9,13 +9,11 @@ import Html.Events
 
 import Life.Grid exposing (Grid, to2d)
 import Life.Input exposing (..)
-
-cell_size : Int
-cell_size = 5
+import Life.Model exposing (Model)
 
 -- Draw a single cell in its correct final position
-renderCell : Int -> Int -> Bool -> Graphics.Collage.Form
-renderCell num_cols index alive =
+renderCell : Int -> Int -> Int -> Bool -> Graphics.Collage.Form
+renderCell num_cols cell_size index alive =
   let
     color = if alive then Color.rgb 255 0 0 else Color.rgb 0 0 0
     (row, col) = to2d num_cols index -- TODO: This is a little skeezy.
@@ -25,23 +23,23 @@ renderCell num_cols index alive =
     rect (toFloat cell_size) (toFloat cell_size) |> filled color |> move (toX, toY)
 
 -- Draw the full grid of cells into a collage
-renderGrid : Grid -> Graphics.Element.Element
-renderGrid model =
+renderGrid : Grid -> Int -> Int -> (Int -> Bool -> Graphics.Collage.Form) -> Graphics.Element.Element
+renderGrid grid width height cell_renderer =
   let
-    render = (renderCell model.num_cols)
-    yshift = toFloat (-1 * model.num_cols * cell_size // 2)
-    xshift = toFloat (-1 * model.num_rows * cell_size // 2)
-    cells = Array.indexedMap render model.cells |> Array.map (move (xshift, yshift)) |> Array.toList
+    cells = Array.indexedMap cell_renderer grid.cells
+          |> Array.toList
   in
     collage
-      (model.num_cols * cell_size * 2)
-      (model.num_rows * cell_size * 2)
+      width
+      height
       cells
 
-view : Signal.Address Input -> Grid -> Html.Html
+view : Signal.Address Input -> Model -> Html.Html
 view address model =
   let
-    elem = renderGrid model
+    cell_renderer = renderCell model.grid.num_cols model.cell_size
+    grid_size = model.cell_size * model.grid.num_cols
+    elem = renderGrid model.grid grid_size grid_size cell_renderer
   in
     Html.div []
           [ Html.text "hola!"
