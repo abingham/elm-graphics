@@ -2,6 +2,7 @@ module Life2 where
 
 import Array
 import Color
+import Effects exposing (Effects)
 import Graphics.Collage exposing (collage, filled, Form, move, rect)
 import Graphics.Element
 import Html
@@ -22,8 +23,23 @@ import Time
 -- http://package.elm-lang.org/packages/evancz/start-app/2.0.2/StartApp
 -- Also look at Signal.mergeMany...I think this will let us pull together various signals like time and HTML button clicks.
 
+-- Aggregate of input types
+type Input = Tick Int | Reset
+
+htmlMailbox : Signal.Mailbox Input
+htmlMailbox = Signal.mailbox Reset
+
+noFx : model -> (model, Effects a)
+noFx model = (model, Effects.none)
+
 app =
-  start { init = init, view = view, update = update, inputs = [] }
+  StartApp.start
+    { init = noFx (createModel 200 200 12345)
+    , view = view
+    , update = update
+    , inputs =
+        [ htmlMailbox.signal
+        , Signal.map (\t -> Tick t) (ticks 10)] }
 
 main =
   app.html
@@ -36,26 +52,6 @@ main =
 --
 -- Model stuff
 --
-
-type Action = None | Reset
-
-type alias Input =
-  { action : Action
-  , tick : Int
-  }
-
-htmlMailbox : Signal.Mailbox Action
-htmlMailbox = Signal.mailbox None
-
-input : Signal Input
-input = Signal.map2 Input htmlMailbox.signal (ticks 10)
-
-model : Signal Model
-model =
-  -- TODO: Route more signals through the update mechanism, and let it update
-  -- the model appropriately. Clever... For example, we need an action to update
-  -- the seed and restart the simulation.
-  Signal.foldp update (createModel 200 200 12345) input
 
 type alias Model =
   { cells : Array.Array Bool
@@ -126,16 +122,20 @@ newVal model index =
     else
       get model index
 
-update : Input -> Model -> Model
+update : Input -> Model -> (Model, Effects Input)
 update input model =
-  case input.action of
-    None ->
-      { model |
-          cells = Array.initialize (model.num_rows * model.num_cols) (newVal model)
-      }
+  let
+    m =
+      case input of
+        Tick t ->
+          { model |
+              cells = Array.initialize (model.num_rows * model.num_cols) (newVal model)
+          }
 
-    Reset ->
-      createModel 200 200 12345
+        Reset ->
+          createModel 200 200 12345
+  in
+    noFx m
 
 --
 -- View stuff
@@ -154,8 +154,8 @@ renderCell num_cols index alive =
   in
     rect (toFloat cell_size) (toFloat cell_size) |> filled color |> move (toX, toY)
 
-view : Model -> Graphics.Element.Element
-view model =
+renderModel : Model -> Graphics.Element.Element
+renderModel model =
   let
     render = (renderCell model.num_cols)
     yshift = toFloat (-1 * model.num_cols * cell_size // 2)
@@ -167,15 +167,15 @@ view model =
       (model.num_rows * cell_size * 2)
       cells
 
-viewSignal : Signal Graphics.Element.Element
-viewSignal = Signal.map view model
-
-buildHtml : Graphics.Element.Element -> Html.Html
-buildHtml elem =
-  Html.div []
-      [ Html.text "hola!"
-      , Html.button [ Html.Events.onClick htmlMailbox.address Reset ] [ Html.text "reset" ]
-      , Html.fromElement elem ]
+view : Signal.Address Input -> Model -> Html.Html
+view address model =
+  let
+    elem = renderModel model
+  in
+    Html.div []
+          [ Html.text "hola!"
+          , Html.button [ Html.Events.onClick address Reset ] [ Html.text "reset" ]
+          , Html.fromElement elem ]
 
 --
 -- Utility stuff
