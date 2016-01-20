@@ -19,35 +19,18 @@ import Time
 -- TODO: Control over cell size
 -- TODO: Make it faster! Surely we can improve on this...
 
--- Here's how to use StartApp like a boss...
--- http://package.elm-lang.org/packages/evancz/start-app/2.0.2/StartApp
--- Also look at Signal.mergeMany...I think this will let us pull together various signals like time and HTML button clicks.
-
 -- Aggregate of input types
 type Input = Tick Int | Reset
-
-htmlMailbox : Signal.Mailbox Input
-htmlMailbox = Signal.mailbox Reset
-
-noFx : model -> (model, Effects a)
-noFx model = (model, Effects.none)
 
 app =
   StartApp.start
     { init = noFx (createModel 200 200 12345)
     , view = view
     , update = update
-    , inputs =
-        [ htmlMailbox.signal
-        , Signal.map (\t -> Tick t) (ticks 10)] }
+    , inputs = [ Signal.map (\t -> Tick t) (ticks 10)] }
 
 main =
   app.html
-
---=main : Signal Html.Html
--- main =
---   -- Signal.map view model
---   Signal.map buildHtml viewSignal
 
 --
 -- Model stuff
@@ -144,6 +127,7 @@ update input model =
 cell_size : Int
 cell_size = 5
 
+-- Draw a single cell in its correct final position
 renderCell : Int -> Int -> Bool -> Graphics.Collage.Form
 renderCell num_cols index alive =
   let
@@ -154,6 +138,7 @@ renderCell num_cols index alive =
   in
     rect (toFloat cell_size) (toFloat cell_size) |> filled color |> move (toX, toY)
 
+-- Draw the full grid of cells into a collage
 renderModel : Model -> Graphics.Element.Element
 renderModel model =
   let
@@ -191,3 +176,6 @@ randomBools size seed =
 
 ticks : Int -> Signal Int
 ticks fps = (Signal.foldp (\tick total -> total + 1) 0 (Time.fps fps))
+
+noFx : model -> (model, Effects a)
+noFx model = (model, Effects.none)
