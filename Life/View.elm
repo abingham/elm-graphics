@@ -27,8 +27,11 @@ renderCell num_cols cell_size index alive =
 renderGrid : Grid -> Int -> Int -> (Int -> Bool -> Graphics.Collage.Form) -> Graphics.Element.Element
 renderGrid grid width height cell_renderer =
   let
+    shift_x = toFloat (-1 * width // 2)
+    shift_y = toFloat (-1 * height // 2)
     cells = Array.indexedMap cell_renderer grid.cells
-          |> Array.toList
+            |> Array.map (\c -> move (shift_x, shift_y) c)
+            |> Array.toList
   in
     collage
       width
@@ -49,7 +52,7 @@ view : Signal.Address Input -> Model -> Html
 view address model =
   let
     cell_renderer = renderCell model.grid.num_cols model.cell_size
-    grid_size = model.cell_size * model.grid.num_cols
+    grid_size = model.cell_size * model.grid.num_cols + 20
     elem = renderGrid model.grid grid_size grid_size cell_renderer
   in
     div []
