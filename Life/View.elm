@@ -4,8 +4,9 @@ import Array
 import Color
 import Graphics.Collage exposing (collage, filled, Form, move, rect)
 import Graphics.Element
-import Html
-import Html.Events
+import Html exposing (..)
+import Html.Attributes
+import Html.Events exposing (onClick)
 
 import Life.Grid exposing (Grid, to2d)
 import Life.Input exposing (..)
@@ -34,14 +35,27 @@ renderGrid grid width height cell_renderer =
       height
       cells
 
-view : Signal.Address Input -> Model -> Html.Html
+countStyle : Attribute
+countStyle =
+  Html.Attributes.style
+    [ ("font-size", "20px")
+    , ("font-family", "monospace")
+    , ("display", "inline-block")
+    , ("width", "50px")
+    , ("text-align", "center")
+    ]
+
+view : Signal.Address Input -> Model -> Html
 view address model =
   let
     cell_renderer = renderCell model.grid.num_cols model.cell_size
     grid_size = model.cell_size * model.grid.num_cols
     elem = renderGrid model.grid grid_size grid_size cell_renderer
   in
-    Html.div []
-          [ Html.text "hola!"
-          , Html.button [ Html.Events.onClick address Reset ] [ Html.text "reset" ]
-          , Html.fromElement elem ]
+    div []
+          [ text "hola!"
+          , button [ onClick address Reset ] [ text "reset" ]
+          , button [ onClick address (ResizeCells (model.cell_size - 1)) ] [ text "-" ]
+          , div [ countStyle ] [ text (toString model.cell_size) ]
+          , button [ onClick address (ResizeCells (model.cell_size + 1)) ] [ text "+" ]
+          , fromElement elem ]

@@ -45,5 +45,10 @@ update input model =
               grid =  Life.Grid.create 200 200 12345
           }
 
+        ResizeCells size ->
+          { model |
+              cell_size = size
+          }
+
   in
     noFx m
