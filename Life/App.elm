@@ -1,4 +1,4 @@
-module Life2 where
+module Life.App where
 
 import Array
 import Color
@@ -11,7 +11,8 @@ import List exposing (filter, length, map)
 import Maybe
 import Random
 import StartApp
-import Time
+
+import Life.Util exposing (noFx, randomBools, ticks)
 
 -- TODO: Use time for random seed, or let use specify it
 -- TODO: Controls for grid size
@@ -22,6 +23,7 @@ import Time
 -- Aggregate of input types
 type Input = Tick Int | Reset
 
+app : StartApp.App Model
 app =
   StartApp.start
     { init = noFx (createModel 200 200 12345)
@@ -29,6 +31,7 @@ app =
     , update = update
     , inputs = [ Signal.map (\t -> Tick t) (ticks 10)] }
 
+main : Signal Html.Html
 main =
   app.html
 
@@ -161,21 +164,3 @@ view address model =
           [ Html.text "hola!"
           , Html.button [ Html.Events.onClick address Reset ] [ Html.text "reset" ]
           , Html.fromElement elem ]
-
---
--- Utility stuff
---
-
-randomBools : Int -> Random.Seed -> List Bool
-randomBools size seed =
-  let
-    gen = Random.list size Random.bool
-    (vals, seed) = Random.generate gen seed
-  in
-    vals
-
-ticks : Int -> Signal Int
-ticks fps = (Signal.foldp (\tick total -> total + 1) 0 (Time.fps fps))
-
-noFx : model -> (model, Effects a)
-noFx model = (model, Effects.none)
