@@ -13,7 +13,6 @@ import Life.View exposing (view)
 -- TODO: Use time for random seed, or let use specify it
 -- TODO: Controls for grid size
 -- TODO: Let user bring cells to life via clicking or something.
--- TODO: Control over cell size
 -- TODO: Make it faster! Surely we can improve on this...maybe canvas drawing?
 --       Not sure if slowdown is step algorithm, rendering, or both.
 -- TODO: Different colors indicating cell longevity.
