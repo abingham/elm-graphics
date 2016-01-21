@@ -3,7 +3,6 @@ module Life.View where
 import Array
 import Color
 import Graphics.Collage exposing (collage, filled, Form, move, rect)
-import Graphics.Element
 import Html exposing (..)
 import Html.Attributes exposing (max, min, style, type', value)
 import Html.Events exposing (on, onClick, targetValue)
@@ -25,8 +24,9 @@ renderCell num_cols cell_size index alive =
   in
     rect (toFloat cell_size) (toFloat cell_size) |> filled color |> move (toX, toY)
 
+
 -- Draw the full grid of cells into a collage
-renderGrid : Grid -> Int -> Int -> (Int -> Bool -> Graphics.Collage.Form) -> Graphics.Element.Element
+renderGrid : Grid -> Int -> Int -> (Int -> Bool -> Graphics.Collage.Form) -> Html
 renderGrid grid width height cell_renderer =
   let
     shift_x = toFloat (-1 * width // 2)
@@ -40,6 +40,7 @@ renderGrid grid width height cell_renderer =
       width
       height
       (background :: cells)
+    |> fromElement
 
 countStyle : Attribute
 countStyle =
@@ -80,4 +81,4 @@ view address model =
           , div [ countStyle ] [ text (toString model.cell_size) ]
           , button [ onClick address (ResizeCells (model.cell_size + 1)) ] [ text "+" ]
           , seedSelector model.seed address
-          , fromElement elem ]
+          , elem ]
