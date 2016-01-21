@@ -10,7 +10,6 @@ type alias Grid =
   { cells : Array.Array Bool
   , num_rows : Int
   , num_cols : Int
-  , seed : Int
   }
 
 get : Grid -> Int -> Bool
@@ -24,7 +23,6 @@ create num_rows num_cols seed =
     { cells = randomBools full_size (Random.initialSeed seed) |> Array.fromList
     , num_rows = num_rows
     , num_cols = num_cols
-    , seed = seed
     }
 
 bound : Int -> Int -> (Int, Int) -> (Int, Int)

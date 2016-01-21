@@ -5,7 +5,7 @@ import Color
 import Graphics.Collage exposing (collage, filled, Form, move, rect)
 import Graphics.Element
 import Html exposing (..)
-import Html.Attributes
+import Html.Attributes exposing (max, min, style, value)
 import Html.Events exposing (onClick)
 
 import Life.Grid exposing (Grid, to2d)
@@ -41,7 +41,7 @@ renderGrid grid width height cell_renderer =
 
 countStyle : Attribute
 countStyle =
-  Html.Attributes.style
+  style
     [ ("font-size", "20px")
     , ("font-family", "monospace")
     , ("display", "inline-block")
@@ -62,4 +62,8 @@ view address model =
           , button [ onClick address (ResizeCells (model.cell_size - 1)) ] [ text "-" ]
           , div [ countStyle ] [ text (toString model.cell_size) ]
           , button [ onClick address (ResizeCells (model.cell_size + 1)) ] [ text "+" ]
+          , meter [ Html.Attributes.min "0"
+                  , Html.Attributes.max "999999"
+                  , value (toString model.seed)]
+              []
           , fromElement elem ]
