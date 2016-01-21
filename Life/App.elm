@@ -14,7 +14,9 @@ import Life.View exposing (view)
 -- TODO: Controls for grid size
 -- TODO: Let user bring cells to life via clicking or something.
 -- TODO: Control over cell size
--- TODO: Make it faster! Surely we can improve on this...
+-- TODO: Make it faster! Surely we can improve on this...maybe canvas drawing?
+--       Not sure if slowdown is step algorithm, rendering, or both.
+-- TODO: Different colors indicating cell longevity.
 
 -- Aggregate of input types
 app : StartApp.App Model
