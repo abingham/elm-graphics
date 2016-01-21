@@ -24,7 +24,7 @@ app =
     { init = noFx (create 200 200 12345 5)
     , view = view
     , update = update
-    , inputs = [ Signal.map (\t -> Tick t) (ticks 10)] }
+    , inputs = [ Signal.map (\t -> Tick t) (ticks 1)] }
 
 --
 -- Update stuff
@@ -49,6 +49,11 @@ update input model =
         ResizeCells size ->
           { model |
               cell_size = size
+          }
+
+        SetSeed seed ->
+          { model |
+              seed = seed
           }
 
   in

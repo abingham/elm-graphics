@@ -5,8 +5,10 @@ import Color
 import Graphics.Collage exposing (collage, filled, Form, move, rect)
 import Graphics.Element
 import Html exposing (..)
-import Html.Attributes exposing (max, min, style, value)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (max, min, style, type', value)
+import Html.Events exposing (on, onClick, targetValue)
+import Result exposing (withDefault)
+import String exposing (toInt)
 
 import Life.Grid exposing (Grid, to2d)
 import Life.Input exposing (..)
@@ -49,6 +51,21 @@ countStyle =
     , ("text-align", "center")
     ]
 
+seedSelector : Int -> Signal.Address Input -> Html
+seedSelector seed address =
+  input [ type' "number"
+        , Html.Attributes.min "0"
+        , Html.Attributes.max "999999"
+        , value (toString seed)
+        , on "click"
+             targetValue
+            (\str -> toInt str |>
+               withDefault seed
+               >> SetSeed
+               >> Signal.message address)
+        ]
+    []
+
 view : Signal.Address Input -> Model -> Html
 view address model =
   let
@@ -62,8 +79,5 @@ view address model =
           , button [ onClick address (ResizeCells (model.cell_size - 1)) ] [ text "-" ]
           , div [ countStyle ] [ text (toString model.cell_size) ]
           , button [ onClick address (ResizeCells (model.cell_size + 1)) ] [ text "+" ]
-          , meter [ Html.Attributes.min "0"
-                  , Html.Attributes.max "999999"
-                  , value (toString model.seed)]
-              []
+          , seedSelector model.seed address
           , fromElement elem ]
