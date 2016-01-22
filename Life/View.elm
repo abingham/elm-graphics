@@ -1,46 +1,45 @@
 module Life.View where
 
 import Array
-import Color
-import Graphics.Collage exposing (collage, filled, Form, move, rect)
 import Html exposing (..)
 import Html.Attributes exposing (max, min, style, type', value)
 import Html.Events exposing (on, onClick, targetValue)
 import Result exposing (withDefault)
-import String exposing (toInt)
+import String exposing (fromList, toInt)
 
 import Life.Grid exposing (Grid, to2d)
 import Life.Input exposing (..)
 import Life.Model exposing (Model)
+import Life.Util exposing (chunks)
 
 -- Draw a single cell in
-renderCell : Int -> Int -> Int -> Bool -> Graphics.Collage.Form
-renderCell num_cols cell_size index alive =
-  let
-    color = if alive then Color.rgb 255 0 0 else Color.rgb 0 0 0
-    (row, col) = to2d num_cols index -- TODO: This use of to2d is a little skeezy.
-    toX = toFloat (col * cell_size + cell_size // 2)
-    toY = toFloat (row * cell_size + cell_size // 2)
-  in
-    rect (toFloat cell_size) (toFloat cell_size) |> filled color |> move (toX, toY)
+-- renderCell : Int -> Int -> Int -> Bool -> Graphics.Collage.Form
+-- renderCell num_cols cell_size index alive =
+--   let
+--     color = if alive then Color.rgb 255 0 0 else Color.rgb 0 0 0
+--     (row, col) = to2d num_cols index -- TODO: This use of to2d is a little skeezy.
+--     toX = toFloat (col * cell_size + cell_size // 2)
+--     toY = toFloat (row * cell_size + cell_size // 2)
+--   in
+--     rect (toFloat cell_size) (toFloat cell_size) |> filled color |> move (toX, toY)
+
+renderCell : Bool -> Char
+renderCell alive =
+  if alive then
+    '#'
+  else
+    ' '
 
 
 -- Draw the full grid of cells into a collage
-renderGrid : Grid -> Int -> Int -> (Int -> Bool -> Graphics.Collage.Form) -> Html
+renderGrid : Grid -> Int -> Int -> (Bool -> Char) -> Html
 renderGrid grid width height cell_renderer =
   let
-    shift_x = toFloat (-1 * width // 2)
-    shift_y = toFloat (-1 * height // 2)
-    cells = Array.indexedMap cell_renderer grid.cells
-            |> Array.map (\c -> move (shift_x, shift_y) c)
-            |> Array.toList
-    background = rect (toFloat width) (toFloat height) |> filled (Color.rgb 0 0 0)
+    renderings = Array.map renderCell grid.cells |> Array.toList
+    lines = chunks (grid.num_cols) renderings |> List.map (String.fromList >> text)
+    separated = List.intersperse (br [] []) lines
   in
-    collage
-      width
-      height
-      (background :: cells)
-    |> fromElement
+    pre [gridStyle] separated
 
 countStyle : Attribute
 countStyle =
@@ -50,6 +49,13 @@ countStyle =
     , ("display", "inline-block")
     , ("width", "50px")
     , ("text-align", "center")
+    ]
+
+gridStyle : Attribute
+gridStyle =
+  style
+    [ ("font-size", "5px")
+    , ("font-family", "monospace")
     ]
 
 seedSelector : Int -> Signal.Address Input -> Html
@@ -70,7 +76,7 @@ seedSelector seed address =
 view : Signal.Address Input -> Model -> Html
 view address model =
   let
-    cell_renderer = renderCell model.grid.num_cols model.cell_size
+    cell_renderer = renderCell
     grid_size = model.cell_size * model.grid.num_cols
     elem = renderGrid model.grid grid_size grid_size cell_renderer
   in

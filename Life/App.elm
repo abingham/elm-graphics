@@ -24,7 +24,7 @@ app =
     { init = noFx (create 200 200 12345 5)
     , view = view
     , update = update
-    , inputs = [ Signal.map (\t -> Tick t) (ticks 1)] }
+    , inputs = [ Signal.map (\t -> Tick t) (ticks 10)] }
 
 --
 -- Update stuff
