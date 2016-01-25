@@ -7,6 +7,8 @@ import Html.Events exposing (on, onClick, targetValue)
 import Result exposing (withDefault)
 import String exposing (fromList, toInt)
 
+import Bootstrap.Html exposing (..)
+
 import Life.Grid exposing (Grid, to2d)
 import Life.Input exposing (..)
 import Life.Model exposing (Model)
@@ -80,11 +82,18 @@ view address model =
     grid_size = model.cell_size * model.grid.num_cols
     elem = renderGrid model.grid grid_size grid_size cell_renderer
   in
-    div []
-          [ button [ onClick address Reset ] [ text "reset" ]
-          , text "cell size"
-          , button [ onClick address (ResizeCells (model.cell_size - 1)) ] [ text "-" ]
-          , div [ countStyle ] [ text (toString model.cell_size) ]
-          , button [ onClick address (ResizeCells (model.cell_size + 1)) ] [ text "+" ]
-          , seedSelector model.seed address
-          , elem ]
+    container_
+               [ node "link" [ Html.Attributes.rel "stylesheet", Html.Attributes.href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"] []
+    , row_
+      [colMd_ 2 2 2
+         [ button [ onClick address Reset ] [ text "reset" ]
+         , text "cell size"
+         , button [ onClick address (ResizeCells (model.cell_size - 1)) ] [ text "-" ]
+         , div [ countStyle] [ text (toString model.cell_size) ]
+         , button [ onClick address (ResizeCells (model.cell_size + 1)) ] [ text "+" ]
+         , seedSelector model.seed address
+         ]
+      , colMd_ 10 10 10
+         [ elem ]
+      ]
+    ]
